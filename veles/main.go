@@ -82,18 +82,19 @@ func main() {
 	window.OnWindowEvent(events.Common.WindowDidMove, func(e *application.WindowEvent) {
 		x, y := window.Position()
 
+
 		screen, err := window.GetScreen()
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		screen_height := screen.Size.Height
-		screen_width := screen.Size.Width
+		screen_height := float32(screen.Size.Height) * screen.ScaleFactor
+		screen_width  := float32(screen.Size.Width) * screen.ScaleFactor
 
-		windowRelativeX = float32(x) / float32(screen_height)
-		windowRelativeY = float32(y) / float32(screen_width)
+		windowRelativeX = float32(x) / float32(screen_width)
+		windowRelativeY = float32(y) / float32(screen_height)
 
-		fmt.Printf("Window moved to: x=%d, y=%d\n", x, y)
+		fmt.Printf("Window relative size: width = %f, y = %f\n", windowRelativeX, windowRelativeY)
 	})
 
 	// Add window event that check and saves realtive size of the window.
@@ -109,8 +110,10 @@ func main() {
 		screen_height := screen.Size.Height
 		screen_width := screen.Size.Width
 
-		windowRelativeHeight = float32(x) / float32(screen_height)
-		windowRelativeWidth = float32(y) / float32(screen_width)
+		windowRelativeWidth = float32(x) / float32(screen_width)
+		windowRelativeHeight = float32(y) / float32(screen_height)
+
+		fmt.Printf("Window relative size: width = %f, y = %f\n", windowRelativeWidth, windowRelativeHeight)
 	})
 
 	err := app.Run()
