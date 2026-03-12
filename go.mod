@@ -1,8 +1,11 @@
-module changeme
+module github.com/mszalewicz/veles
 
-go 1.25
+go 1.26.1
 
-require github.com/wailsapp/wails/v3 v3.0.0-alpha.70
+require (
+	github.com/mattn/go-sqlite3 v1.14.34
+	github.com/wailsapp/wails/v3 v3.0.0-alpha.74
+)
 
 require (
 	dario.cat/mergo v1.0.2 // indirect
