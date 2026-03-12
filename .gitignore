@@ -24,4 +24,13 @@ go.work.sum
 # env file
 .env
 
+# os specific
 .DS_Store
+
+# project
+.task
+bin
+frontend/dist
+frontend/node_modules
+build/linux/appimage/build
+build/windows/nsis/MicrosoftEdgeWebview2Setup.exe

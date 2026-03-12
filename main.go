@@ -82,14 +82,13 @@ func main() {
 	window.OnWindowEvent(events.Common.WindowDidMove, func(e *application.WindowEvent) {
 		x, y := window.Position()
 
-
 		screen, err := window.GetScreen()
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		screen_height := float32(screen.Size.Height) * screen.ScaleFactor
-		screen_width  := float32(screen.Size.Width) * screen.ScaleFactor
+		screen_width := float32(screen.Size.Width) * screen.ScaleFactor
 
 		windowRelativeX = float32(x) / float32(screen_width)
 		windowRelativeY = float32(y) / float32(screen_height)
