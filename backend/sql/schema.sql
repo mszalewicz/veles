@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS window (
+    id     INTEGER PRIMARY KEY AUTOINCREMENT,
+    width  REAL NOT NULL,
+    height REAL NOT NULL,
+    x      REAL NOT NULL,
+    y      REAL NOT NULL
+) STRICT;
