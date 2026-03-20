@@ -12,3 +12,19 @@ SET
     x      = sqlc.arg('x'),
     y      = sqlc.arg('y')
 WHERE id = 1;
+
+-- name: InsertDefaultWindow :exec
+INSERT INTO window (
+    id,
+    width,
+    height,
+    x,
+    y
+)
+VALUES (
+    1,
+    sqlc.arg('width'),
+    sqlc.arg('height'),
+    sqlc.arg('x'),
+    sqlc.arg('y')
+);

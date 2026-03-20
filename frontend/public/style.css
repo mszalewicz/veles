@@ -65,6 +65,8 @@ body {
     place-content: center;
     min-width: 320px;
     min-height: 100vh;
+    background-color: #f5f242;
+    /*background-color: #fff100;*/
 }
 
 .container {

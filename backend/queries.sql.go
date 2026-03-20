@@ -29,6 +29,40 @@ func (q *Queries) GetWindowGeometry(ctx context.Context) (Window, error) {
 	return i, err
 }
 
+const insertDefaultWindow = `-- name: InsertDefaultWindow :exec
+INSERT INTO window (
+    id,
+    width,
+    height,
+    x,
+    y
+)
+VALUES (
+    1,
+    ?1,
+    ?2,
+    ?3,
+    ?4
+)
+`
+
+type InsertDefaultWindowParams struct {
+	Width  float64
+	Height float64
+	X      float64
+	Y      float64
+}
+
+func (q *Queries) InsertDefaultWindow(ctx context.Context, arg InsertDefaultWindowParams) error {
+	_, err := q.db.ExecContext(ctx, insertDefaultWindow,
+		arg.Width,
+		arg.Height,
+		arg.X,
+		arg.Y,
+	)
+	return err
+}
+
 const updateWindowGeometry = `-- name: UpdateWindowGeometry :exec
 UPDATE window
 SET

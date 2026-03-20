@@ -1,9 +1,9 @@
 package main
 
 import (
+	"context"
 	"embed"
 	_ "embed"
-	"fmt"
 	"log"
 	"log/slog"
 	"os"
@@ -20,11 +20,18 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+var (
+	WindowRelativeX      float64
+	WindowRelativeY      float64
+	WindowRelativeHeight float64
+	WindowRelativeWidth  float64
+)
+
 func init() {
 }
 
 func main() {
-
+	ctx := context.Background()
 	// TODO:
 	// - save windows info in db
 
@@ -94,40 +101,39 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = backend.ApplySchema()
+	var schemaVersion int
+	err = backend.DB.QueryRow("PRAGMA user_version").Scan(&schemaVersion)
 	if err != nil {
-		slog.Error("Could not apply database schema", "error", err)
+		slog.Error("Could not SQLite user_version", "error", err)
 		// TODO: show error in application window
 		os.Exit(1)
 	}
 
-	var schemaVersion int
-	err = backend.DB.QueryRow("PRAGMA user_version").Scan(&schemaVersion)
-    if err != nil {
-        log.Fatal(err)
-    }
+	if schemaVersion == 0 {
+		if err := backend.ApplySchema(); err != nil {
+			slog.Error("Could not apply schema to database", "error", err)
+			// TODO: show error in application window
+			os.Exit(1)
+		}
 
-    if schemaVersion == 0 {
+		err = backend.SafeInsertDefaultWindow(ctx, backend.InsertDefaultWindowParams{Width: 0.5, Height: 0.5, X: 0.25, Y: 0.25})
 
-    }
+		if err != nil {
+			slog.Error("Could not apply schema to database", "error", err)
+			// TODO: show error in application window
+			os.Exit(1)
+		}
 
-	// errToHandleInGUI = backend.CreateStructure()
+		_, err = backend.DB.Exec("PRAGMA user_version = 1")
 
-	// if errToHandleInGUI != nil {
-	// 	slog.Error("Could not bootstrap DB from schema.", "error", errToHandleInGUI)
-	// 	// TODO: show error in application window
-	// }
+		err = backend.SafeSqliteUserVersion(1)
 
-	// Window state management:
-	// didWindowChange := false
-	// TODO: read this from db
-	var windowRelativeX float32 = 0
-	// TODO: read this from db
-	var windowRelativeY float32 = 0
-	// TODO: read this from db
-	var windowRelativeHeight float32 = 0
-	// TODO: read this from db
-	var windowRelativeWidth float32 = 0
+		if err != nil {
+			slog.Error("Could not update user_version", "error", err)
+			// TODO: show error in application window
+			os.Exit(1)
+		}
+	}
 
 	app := application.New(application.Options{
 		Name:        "veles",
@@ -152,24 +158,58 @@ func main() {
 		},
 		BackgroundColour: application.NewRGB(27, 38, 54),
 		URL:              "/",
-		Height:           900,
-		Width:            600,
-		MinHeight:        500,
-		MinWidth:         500,
-		// MaxHeight: 1000,
-		// MaxWidth: 1000,
+		Height:           100,
+		Width:            100,
+		MinHeight:        100,
+		MinWidth:         100,
+		X:                100,
+		Y:                100,
+		Hidden:           true,
 	})
 
-	// Periodically saves window positioning and size if there was and update.
-	// go func(proceed *bool, relativeX *float32, relativeY *float32, relativeHeight *float32, relativeWidth *float32) {
-	// 	time.Sleep(5 * time.Second)
+	app.OnShutdown(func() {
+		err := backend.SafeUpdateWindowGeometry(ctx, backend.UpdateWindowGeometryParams{
+			Height: WindowRelativeHeight,
+			Width:  WindowRelativeWidth,
+			X:      WindowRelativeX,
+			Y:      WindowRelativeY,
+		})
 
-	// 	if *proceed {
-	// 		// TODO save information to db
-	// 		*proceed = false
-	// 	}
+		if err != nil {
+			slog.Error("Could not update window geometry:", "error", err)
+			// TODO: show error in application window
+			os.Exit(1)
+		}
+	})
 
-	// }(&didWindowChange, &windowRelativeX, &windowRelativeY, &windowRelativeHeight, &windowRelativeWidth)
+	// Read saved window position + size and apply before showing window.
+	app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+		screen, err := window.GetScreen()
+		if err != nil {
+			slog.Error("Nil screen object:", "error", err)
+			os.Exit(1)
+		}
+
+		windowGeometry, err := backend.Q.GetWindowGeometry(ctx)
+		if err != nil {
+			slog.Error("Could not read window geometry data from database:", "error", err)
+			os.Exit(1)
+		}
+
+		width := int(windowGeometry.Width * float64(screen.Size.Width))
+		height := int(windowGeometry.Height * float64(screen.Size.Height))
+
+		x := int(windowGeometry.X * float64(screen.Size.Width) * float64(screen.ScaleFactor))
+		y := int(windowGeometry.Y * float64(screen.Size.Height) * float64(screen.ScaleFactor))
+
+		minHeight := int(0.1 * float64(screen.Size.Height))
+		minWidth := int(0.1 * float64(screen.Size.Width))
+
+		window.SetMinSize(minWidth, minHeight)
+		window.SetPosition(x, y)
+		window.SetSize(width, height)
+		window.Show()
+	})
 
 	// Adds window event that checks and saves relative position of the window.
 	// User can position windows in their favourite place and application will rember it between start ups.
@@ -181,13 +221,13 @@ func main() {
 			log.Fatal(err)
 		}
 
-		screen_height := float32(screen.Size.Height) * screen.ScaleFactor
-		screen_width := float32(screen.Size.Width) * screen.ScaleFactor
+		screen_height := float64(screen.Size.Height) * float64(screen.ScaleFactor)
+		screen_width := float64(screen.Size.Width) * float64(screen.ScaleFactor)
 
-		windowRelativeX = float32(x) / float32(screen_width)
-		windowRelativeY = float32(y) / float32(screen_height)
+		WindowRelativeX = float64(x) / float64(screen_width)
+		WindowRelativeY = float64(y) / float64(screen_height)
 
-		fmt.Printf("Window relative size: width = %f, y = %f\n", windowRelativeX, windowRelativeY)
+		// fmt.Printf("Window relative size: width = %f, y = %f\n", WindowRelativeX, WindowRelativeY)
 	})
 
 	// Add window event that check and saves realtive size of the window.
@@ -203,10 +243,10 @@ func main() {
 		screen_height := screen.Size.Height
 		screen_width := screen.Size.Width
 
-		windowRelativeWidth = float32(x) / float32(screen_width)
-		windowRelativeHeight = float32(y) / float32(screen_height)
+		WindowRelativeWidth = float64(x) / float64(screen_width)
+		WindowRelativeHeight = float64(y) / float64(screen_height)
 
-		fmt.Printf("Window relative size: width = %f, y = %f\n", windowRelativeWidth, windowRelativeHeight)
+		// fmt.Printf("Window relative size: width = %f, y = %f\n", WindowRelativeWidth, WindowRelativeHeight)
 	})
 
 	err = app.Run()
