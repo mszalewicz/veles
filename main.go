@@ -32,8 +32,6 @@ func init() {
 
 func main() {
 	ctx := context.Background()
-	// TODO:
-	// - save windows info in db
 
 	//      App directory scheme under different OS:
 	// 		Mac:       ~/Library/Application\ Scripts/<appName>/log
@@ -156,15 +154,15 @@ func main() {
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInset,
 		},
-		BackgroundColour: application.NewRGB(27, 38, 54),
-		URL:              "/",
-		Height:           100,
-		Width:            100,
-		MinHeight:        100,
-		MinWidth:         100,
-		X:                100,
-		Y:                100,
-		Hidden:           true,
+		BackgroundColour: application.NewRGB(0, 0, 0),
+		URL: "/",
+		// Height:           100,
+		// Width:            100,
+		// MinHeight:        500,
+		// MinWidth:         500,
+		// X:                100,
+		// Y:                100,
+		Hidden: true,
 	})
 
 	app.OnShutdown(func() {
@@ -208,6 +206,8 @@ func main() {
 		window.SetMinSize(minWidth, minHeight)
 		window.SetPosition(x, y)
 		window.SetSize(width, height)
+		window.SetMinSize(500, 500)
+		window.SetBackgroundColour(application.NewRGB(0,0,0))
 		window.Show()
 	})
 
@@ -215,6 +215,11 @@ func main() {
 	// User can position windows in their favourite place and application will rember it between start ups.
 	window.OnWindowEvent(events.Common.WindowDidMove, func(e *application.WindowEvent) {
 		x, y := window.Position()
+
+		window.EmitEvent("window-repositioned", map[string]int{
+			"x": x,
+			"y": y,
+		})
 
 		screen, err := window.GetScreen()
 		if err != nil {
@@ -233,7 +238,19 @@ func main() {
 	// Add window event that check and saves realtive size of the window.
 	// User can set up window size as they please and application will rember it between start ups.
 	window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
+		posX, posY := window.Position()
+
+		window.EmitEvent("window-repositioned", map[string]int{
+			"x": posX,
+			"y": posY,
+		})
+
 		x, y := window.Size()
+
+		window.EmitEvent("window-resized", map[string]int{
+			"width":  x,
+			"height": y,
+		})
 
 		screen, err := window.GetScreen()
 		if err != nil {

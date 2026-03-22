@@ -1,14 +1,11 @@
 import { Events } from "@wailsio/runtime";
 import { GreetService } from "../bindings/github.com/mszalewicz/veles";
 
-const resultElement = document.getElementById("result");
-const timeElement = document.getElementById("time");
+const heightElement = document.getElementById("label-height")
+const widthElement = document.getElementById("label-width")
+const positionElement = document.getElementById("label-center")
 
 window.doGreet = async () => {
-    let name = document.getElementById("name").value;
-    if (!name) {
-        name = "anonymous";
-    }
     try {
         resultElement.innerText = await GreetService.Greet(name);
     } catch (err) {
@@ -16,12 +13,18 @@ window.doGreet = async () => {
     }
 };
 
-window.greetMany = async () => {
-    const names = ["Alice", "Bob", "Charlie"];
-    const greetings = await GreetService.GreetMany(names);
-    console.log(greetings);
-};
 
-Events.On("time", (time) => {
-    timeElement.innerText = time.data;
+Events.On('window-resized', (event) => {
+    const { width, height } = event.data;
+
+    heightElement.innerText = `${height}`
+    widthElement.innerText = `${width}`
 });
+
+Events.On('window-repositioned', (event) => {
+    const {x, y} = event.data;
+
+    positionElement.innerText = `x: ${x} | y: ${y}`
+});
+
+
