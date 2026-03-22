@@ -3,7 +3,6 @@ import Stats from "three/addons/libs/stats.module.js"
 
 const container = document.getElementById("canvas-container");
 
-// 1. Scene Setup
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
     75,
@@ -57,8 +56,6 @@ scene.add(points);
 
 // const stats = new Stats();
 // stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
-
-
 // stats.dom.style.position = 'absolute';
 // stats.dom.style.top = '0px';
 // stats.dom.style.right = '0px';
@@ -72,7 +69,7 @@ scene.add(points);
 function animate() {
     requestAnimationFrame(animate);
 
-    // stats.begin();
+    // stats.begin(); // for stats
 
     const positionsAttr = [];
 
@@ -89,15 +86,12 @@ function animate() {
 
     geometry.setAttribute("position", new THREE.Float32BufferAttribute(positionsAttr, 3));
 
-    // Subtle rotation of the whole cloud
     points.rotation.y += 0.002;
 
     renderer.render(scene, camera);
-
-    // stats.end();
+    // stats.end(); // for stats
 }
 
-// 4. Handle Resizing
 window.addEventListener("resize", () => {
     const width = container.clientWidth;
     const height = container.clientHeight;
@@ -105,18 +99,5 @@ window.addEventListener("resize", () => {
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
 });
-
-
-
-// // 2. Update in your animation loop
-// function animate() {
-//     stats.begin();
-
-//     // Your rendering logic
-//     renderer.render(scene, camera);
-
-//     stats.end();
-//     requestAnimationFrame(animate);
-// }
 
 animate();

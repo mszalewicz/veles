@@ -35,7 +35,7 @@
                 align-items: center;
                 justify-content: center;
                 font-family: sans-serif;
-                border-radius: 4px; /* Slight rounding for a cleaner look */
+                border-radius: 4px;
             }
 
             /* --- ARROW STYLING --- */
@@ -75,7 +75,6 @@
                 border-right: var(--thickness) solid var(--color);
             }
 
-            /* Horizontal Heads Centering */
             .arrow-h::before {
                 left: 0;
                 top: calc(var(--thickness) * -1);
@@ -87,7 +86,6 @@
                 transform: rotate(45deg);
             }
 
-            /* Vertical Heads Centering */
             .arrow-v::before {
                 top: 0;
                 left: calc(var(--thickness) * -1);
@@ -99,7 +97,6 @@
                 transform: rotate(135deg);
             }
 
-            /* Add to CSS <style> */
             .measure-label {
                 position: absolute;
                 color: blanchedalmond;
@@ -122,7 +119,7 @@
                 font-family: monospace;
                 font-weight: bold;
                 font-size: 20px;
-                z-index: 20; /* Higher than canvas-container */
+                z-index: 20;
                 pointer-events: none;
                 backdrop-filter: blur(10px);
                 padding: 20px;
@@ -135,13 +132,13 @@
                 top: var(--edge-gap);
                 left: calc(
                     var(--v-arrow-from-left) + var(--thickness) + 15px
-                ); /* Right of vertical arrow top */
+                );
             }
 
             #label-width {
                 bottom: calc(
                     var(--h-arrow-from-bottom) + var(--thickness) + 15px
-                ); /* Up from horizontal arrow right */
+                );
                 right: var(--edge-gap);
             }
 

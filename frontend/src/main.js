@@ -13,7 +13,7 @@ window.doGreet = async () => {
     }
 };
 
-
+// Show resized dimentions
 Events.On('window-resized', (event) => {
     const { width, height } = event.data;
 
@@ -21,6 +21,7 @@ Events.On('window-resized', (event) => {
     widthElement.innerText = `${width}`
 });
 
+// Show window coordinates
 Events.On('window-repositioned', (event) => {
     const {x, y} = event.data;
 
